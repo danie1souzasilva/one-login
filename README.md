@@ -1,58 +1,125 @@
-# one-login
+# DocPass
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+DocPass e um SaaS para centralizar dados pessoais e documentos. Usuarios cadastram uma unica vez e autorizam empresas a acessar essas informacoes via API segura.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+## Tecnologias
 
-## Running the application in dev mode
+- Java 21
+- Quarkus 3
+- REST API
+- Hibernate ORM com Panache
+- PostgreSQL
+- Maven
+- Docker
+- Kafka
+- MinIO (S3 compativel)
+- JWT para usuarios
+- API Key para empresas
+- Vavr (Either/Option/Try)
+- MapStruct
+- OpenAPI (Swagger)
+- Micrometer + Prometheus
+- Health Checks (SmallRye Health)
 
-You can run your application in dev mode that enables live coding using:
+## Arquitetura
 
-```shell script
+Base do pacote: `br.com.docpass`
+
+Pacotes principais:
+- `dominio`
+- `aplicacao`
+- `adaptador.entrada`
+- `adaptador.saida`
+- `configuracao`
+- `seguranca`
+- `webhook`
+- `observabilidade`
+
+## Endpoints (v1)
+
+API do usuario:
+- `POST /api/v1/usuarios`
+- `GET /api/v1/usuarios/{id}`
+- `PUT /api/v1/usuarios/{id}`
+- `POST /api/v1/documentos/enviar`
+- `GET /api/v1/documentos/usuario/{usuarioId}`
+- `POST /api/v1/consentimentos`
+- `GET /api/v1/consentimentos/usuario/{usuarioId}`
+- `POST /api/v1/empresas`
+
+API empresarial:
+- `GET /api-empresas/v1/perfil/{usuarioId}`
+- `GET /api-empresas/v1/documentos/{usuarioId}`
+
+## Documentacao da API
+
+Swagger UI disponivel em:
+- `/q/swagger-ui`
+
+## Seguranca
+
+- Usuarios autenticam via JWT.
+- Empresas usam header `X-API-KEY`.
+- Rate limiting: 100 requisicoes por minuto por empresa.
+
+## Eventos Kafka
+
+Topicos:
+- `perfil_atualizado`
+- `documento_enviado`
+- `consentimento_concedido`
+
+## Webhooks
+
+- Consome eventos Kafka.
+- Envia POST para webhooks cadastrados.
+- Payload:
+  - `{ "evento": "...", "usuarioId": "...", "timestamp": "..." }`
+
+## Auditoria
+
+Registra acessos a dados sensiveis com:
+- usuarioId
+- empresaId
+- tipoAcesso
+- endpoint
+- timestamp
+- ipRequisicao
+
+## Observabilidade
+
+Metrica:
+- `quantidade_requisicoes_api`
+- `tempo_resposta_api`
+- `documentos_enviados_total`
+- `consentimentos_concedidos_total`
+
+Prometheus:
+- `/q/metrics`
+
+Health checks:
+- `/q/health/live`
+- `/q/health/ready`
+
+## Como rodar
+
+1. Suba dependencias:
+
+```bash
+docker compose up -d
+```
+
+2. Crie o bucket no MinIO (console em http://localhost:9001):
+- Bucket: `docpass-docs`
+
+3. Inicie o Quarkus:
+
+```bash
 ./mvnw quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+## Testes
 
-## Packaging and running the application
-
-The application can be packaged using:
-
-```shell script
-./mvnw package
+```bash
+./mvnw test
 ```
-
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
-
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
-```
-
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
-
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./mvnw package -Dnative
-```
-
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./target/one-login-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
-## Related Guides
-
-- Apache Kafka Client ([guide](https://quarkus.io/guides/kafka)): Connect to Apache Kafka with its native API

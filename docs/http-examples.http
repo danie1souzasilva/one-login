@@ -1,0 +1,83 @@
+# HTTP Examples (DocPass)
+
+### Criar usuario
+POST http://localhost:8080/api/v1/usuarios
+Content-Type: application/json
+Authorization: Bearer {{token_usuario}}
+
+{
+  "nome": "Maria",
+  "email": "maria@example.com",
+  "cpf": "123",
+  "telefone": "999",
+  "dataNascimento": "1995-02-10"
+}
+
+### Buscar usuario
+GET http://localhost:8080/api/v1/usuarios/{{usuario_id}}
+Authorization: Bearer {{token_usuario}}
+
+### Atualizar usuario
+PUT http://localhost:8080/api/v1/usuarios/{{usuario_id}}
+Content-Type: application/json
+Authorization: Bearer {{token_usuario}}
+
+{
+  "nome": "Maria",
+  "email": "maria@novo.com",
+  "cpf": "123",
+  "telefone": "999",
+  "dataNascimento": "1995-02-10"
+}
+
+### Enviar documento
+POST http://localhost:8080/api/v1/documentos/enviar
+Authorization: Bearer {{token_usuario}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="usuarioId"
+
+{{usuario_id}}
+------WebKitFormBoundary
+Content-Disposition: form-data; name="tipoDocumento"
+
+RG
+------WebKitFormBoundary
+Content-Disposition: form-data; name="arquivo"; filename="rg.pdf"
+Content-Type: application/pdf
+
+< ./rg.pdf
+------WebKitFormBoundary--
+
+### Listar documentos
+GET http://localhost:8080/api/v1/documentos/usuario/{{usuario_id}}
+Authorization: Bearer {{token_usuario}}
+
+### Registrar empresa
+POST http://localhost:8080/api/v1/empresas
+Content-Type: application/json
+Authorization: Bearer {{token_usuario}}
+
+{
+  "nome": "Empresa X"
+}
+
+### Conceder consentimento
+POST http://localhost:8080/api/v1/consentimentos
+Content-Type: application/json
+Authorization: Bearer {{token_usuario}}
+
+{
+  "usuarioId": "{{usuario_id}}",
+  "empresaId": "{{empresa_id}}",
+  "escopos": ["perfil", "documentos"]
+}
+
+### API empresarial perfil
+GET http://localhost:8080/api-empresas/v1/perfil/{{usuario_id}}
+X-API-KEY: {{api_key}}
+
+### API empresarial documentos
+GET http://localhost:8080/api-empresas/v1/documentos/{{usuario_id}}
+X-API-KEY: {{api_key}}
